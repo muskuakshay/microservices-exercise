@@ -2,6 +2,7 @@ package com.enterprise.productservice.controller;
 
 import com.enterprise.productservice.entity.Product;
 import com.enterprise.productservice.service.ProductService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,8 +12,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -67,5 +70,37 @@ public class ProductController {
     ) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/paged")
+    public ResponseEntity<Page<Product>> getProductsWithPagination(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "id") String sortField,
+            @RequestParam(defaultValue = "asc") String sortDirection
+    ) {
+        Page<Product> products =
+                productService.getProductsWithPagination(
+                        page,
+                        size,
+                        sortField,
+                        sortDirection
+                );
+
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<Product>> filterProductsByMinimumPrice(
+            @RequestParam BigDecimal minimumPrice
+    ) {
+        return ResponseEntity.ok(
+                productService.filterProductsByMinimumPrice(minimumPrice)
+        );
+    }
+
+    @GetMapping("/names")
+    public ResponseEntity<List<String>> getProductNames() {
+        return ResponseEntity.ok(productService.getProductNames());
     }
 }

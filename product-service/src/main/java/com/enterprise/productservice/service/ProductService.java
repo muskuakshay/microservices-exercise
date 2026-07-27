@@ -2,8 +2,13 @@ package com.enterprise.productservice.service;
 
 import com.enterprise.productservice.entity.Product;
 import com.enterprise.productservice.repository.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,9 +71,64 @@ public class ProductService {
                 .orElse(false);
     }
 
+    public Page<Product> getProductsWithPagination(
+            int page,
+            int size,
+            String sortField,
+            String sortDirection
+    ) {
+        if (page < 0) {
+            throw new IllegalArgumentException(
+                    "Page number cannot be negative"
+            );
+        }
+
+        if (size <= 0) {
+            throw new IllegalArgumentException(
+                    "Page size must be greater than zero"
+            );
+        }
+
+        Sort.Direction direction =
+                "desc".equalsIgnoreCase(sortDirection)
+                        ? Sort.Direction.DESC
+                        : Sort.Direction.ASC;
+
+        Sort sort = Sort.by(direction, sortField);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return productRepository.findAll(pageable);
+    }
+
+    public List<Product> filterProductsByMinimumPrice(
+            BigDecimal minimumPrice
+    ) {
+        if (minimumPrice == null || minimumPrice.signum() < 0) {
+            throw new IllegalArgumentException(
+                    "Minimum price cannot be negative"
+            );
+        }
+
+        return productRepository.findAll()
+                .stream()
+                .filter(product ->
+                        product.getPrice().compareTo(minimumPrice) >= 0
+                )
+                .toList();
+    }
+
+    public List<String> getProductNames() {
+        return productRepository.findAll()
+                .stream()
+                .map(Product::getName)
+                .toList();
+    }
+
     private void validateProduct(Product product) {
         if (product == null) {
-            throw new IllegalArgumentException("Product cannot be null");
+            throw new IllegalArgumentException(
+                    "Product cannot be null"
+            );
         }
 
         if (product.getName() == null || product.getName().isBlank()) {
