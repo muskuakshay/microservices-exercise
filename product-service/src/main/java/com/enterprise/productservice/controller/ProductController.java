@@ -103,4 +103,13 @@ public class ProductController {
     public ResponseEntity<List<String>> getProductNames() {
         return ResponseEntity.ok(productService.getProductNames());
     }
+
+    @GetMapping("/low-stock")
+    public ResponseEntity<List<Product>> getLowStockProducts(
+            @RequestParam Integer maximumStock
+    ) {
+        return ResponseEntity.ok(
+                productService.getLowStockProducts(maximumStock)
+        );
+    }
 }

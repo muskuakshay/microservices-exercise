@@ -124,6 +124,16 @@ public class ProductService {
                 .toList();
     }
 
+    public List<Product> getLowStockProducts(Integer maximumStock) {
+        if (maximumStock == null || maximumStock < 0) {
+            throw new IllegalArgumentException(
+                    "Maximum stock cannot be negative"
+            );
+        }
+
+        return productRepository.findLowStockProducts(maximumStock);
+    }
+
     private void validateProduct(Product product) {
         if (product == null) {
             throw new IllegalArgumentException(
