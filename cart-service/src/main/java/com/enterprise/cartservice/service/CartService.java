@@ -1,5 +1,7 @@
 package com.enterprise.cartservice.service;
 
+import com.enterprise.cartservice.client.ProductClient;
+import com.enterprise.cartservice.dto.ProductResponse;
 import com.enterprise.cartservice.entity.Cart;
 import com.enterprise.cartservice.entity.CartItem;
 import com.enterprise.cartservice.repository.CartItemRepository;
@@ -14,13 +16,16 @@ public class CartService {
 
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
+    private final ProductClient productClient;
 
     public CartService(
             CartRepository cartRepository,
-            CartItemRepository cartItemRepository
+            CartItemRepository cartItemRepository,
+            ProductClient productClient
     ) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
+        this.productClient = productClient;
     }
 
     public Cart createCart(Cart cart) {
@@ -49,6 +54,23 @@ public class CartService {
         if (!cartRepository.existsById(cartItem.getCartId())) {
             throw new IllegalArgumentException(
                     "Cart not found with id: " + cartItem.getCartId()
+            );
+        }
+
+        ProductResponse product =
+                productClient.getProductById(cartItem.getProductId());
+
+        if (product == null) {
+            throw new IllegalArgumentException(
+                    "Product not found with id: " + cartItem.getProductId()
+            );
+        }
+
+        if (product.getStock() == null
+                || product.getStock() < cartItem.getQuantity()) {
+            throw new IllegalArgumentException(
+                    "Insufficient stock for product id: "
+                            + cartItem.getProductId()
             );
         }
 
