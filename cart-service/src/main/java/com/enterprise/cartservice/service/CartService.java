@@ -4,6 +4,8 @@ import com.enterprise.cartservice.client.ProductClient;
 import com.enterprise.cartservice.dto.ProductResponse;
 import com.enterprise.cartservice.entity.Cart;
 import com.enterprise.cartservice.entity.CartItem;
+import com.enterprise.cartservice.event.CartItemAddedEvent;
+import com.enterprise.cartservice.kafka.CartEventProducer;
 import com.enterprise.cartservice.repository.CartItemRepository;
 import com.enterprise.cartservice.repository.CartRepository;
 import org.springframework.stereotype.Service;
@@ -17,15 +19,18 @@ public class CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductClient productClient;
+    private final CartEventProducer cartEventProducer;
 
     public CartService(
             CartRepository cartRepository,
             CartItemRepository cartItemRepository,
-            ProductClient productClient
+            ProductClient productClient,
+            CartEventProducer cartEventProducer
     ) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.productClient = productClient;
+        this.cartEventProducer = cartEventProducer;
     }
 
     public Cart createCart(Cart cart) {
@@ -74,7 +79,17 @@ public class CartService {
             );
         }
 
-        return cartItemRepository.save(cartItem);
+        CartItem savedCartItem = cartItemRepository.save(cartItem);
+
+        CartItemAddedEvent event = new CartItemAddedEvent(
+                savedCartItem.getCartId(),
+                savedCartItem.getProductId(),
+                savedCartItem.getQuantity()
+        );
+
+        cartEventProducer.publishCartItemAddedEvent(event);
+
+        return savedCartItem;
     }
 
     public List<CartItem> getAllCartItems() {
