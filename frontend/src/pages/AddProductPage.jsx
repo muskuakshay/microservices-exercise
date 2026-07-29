@@ -1,7 +1,13 @@
 import { useState } from "react";
-import { createProduct } from "../services/productApi";
+import { useDispatch, useSelector } from "react-redux";
+import { addProduct } from "../features/productSlice";
 
 function AddProductPage() {
+  const dispatch = useDispatch();
+
+  const loading = useSelector((state) => state.products.loading);
+  const error = useSelector((state) => state.products.error);
+
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -9,7 +15,6 @@ function AddProductPage() {
   });
 
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -22,9 +27,7 @@ function AddProductPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     setMessage("");
-    setError("");
 
     const product = {
       name: formData.name,
@@ -33,7 +36,9 @@ function AddProductPage() {
     };
 
     try {
-      const createdProduct = await createProduct(product);
+      const createdProduct = await dispatch(
+        addProduct(product)
+      ).unwrap();
 
       setMessage(
         `Product "${createdProduct.name}" was created successfully.`
@@ -46,7 +51,6 @@ function AddProductPage() {
       });
     } catch (requestError) {
       console.error("Failed to create product:", requestError);
-      setError("Unable to create product.");
     }
   };
 
@@ -97,7 +101,9 @@ function AddProductPage() {
           />
         </div>
 
-        <button type="submit">Create Product</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "Creating..." : "Create Product"}
+        </button>
       </form>
     </div>
   );

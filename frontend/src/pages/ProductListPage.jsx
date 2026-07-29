@@ -1,28 +1,23 @@
-import { useEffect, useState } from "react";
-import { fetchProducts } from "../services/productApi";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { loadProducts } from "../features/productSlice";
 
 function ProductListPage() {
-  const [products, setProducts] = useState([]);
-  const [error, setError] = useState("");
+  const dispatch = useDispatch();
+
+  const products = useSelector((state) => state.products.items);
+  const loading = useSelector((state) => state.products.loading);
+  const error = useSelector((state) => state.products.error);
 
   useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        const data = await fetchProducts();
-        setProducts(data);
-      } catch (requestError) {
-        console.error("Failed to fetch products:", requestError);
-        setError("Unable to load products.");
-      }
-    };
-
-    loadProducts();
-  }, []);
+    dispatch(loadProducts());
+  }, [dispatch]);
 
   return (
     <div>
       <h1>Products</h1>
 
+      {loading && <p>Loading products...</p>}
       {error && <p>{error}</p>}
 
       <table>
