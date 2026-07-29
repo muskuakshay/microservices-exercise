@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/carts")
@@ -47,14 +48,16 @@ public class CartController {
     }
 
     @PostMapping("/items")
-    public ResponseEntity<CartItem> addCartItem(
+    public CompletableFuture<ResponseEntity<CartItem>> addCartItem(
             @RequestBody CartItem cartItem
     ) {
-        CartItem createdItem = cartService.addCartItem(cartItem);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(createdItem);
+        return cartService
+                .addCartItem(cartItem)
+                .thenApply(createdItem ->
+                        ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(createdItem)
+                );
     }
 
     @GetMapping("/items")

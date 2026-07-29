@@ -1,7 +1,6 @@
 package com.enterprise.cartservice.service;
 
 import com.enterprise.cartservice.client.ProductClient;
-import com.enterprise.cartservice.dto.ProductResponse;
 import com.enterprise.cartservice.entity.Cart;
 import com.enterprise.cartservice.entity.CartItem;
 import com.enterprise.cartservice.event.CartItemAddedEvent;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class CartService {
@@ -53,7 +53,7 @@ public class CartService {
         return cartRepository.findAll();
     }
 
-    public CartItem addCartItem(CartItem cartItem) {
+    public CompletableFuture<CartItem> addCartItem(CartItem cartItem) {
         validateCartItem(cartItem);
 
         if (!cartRepository.existsById(cartItem.getCartId())) {
@@ -62,34 +62,39 @@ public class CartService {
             );
         }
 
-        ProductResponse product =
-                productClient.getProductById(cartItem.getProductId());
+        return productClient
+                .getProductById(cartItem.getProductId())
+                .thenApply(product -> {
 
-        if (product == null) {
-            throw new IllegalArgumentException(
-                    "Product not found with id: " + cartItem.getProductId()
-            );
-        }
+                    if (product == null) {
+                        throw new IllegalArgumentException(
+                                "Product not found with id: "
+                                        + cartItem.getProductId()
+                        );
+                    }
 
-        if (product.getStock() == null
-                || product.getStock() < cartItem.getQuantity()) {
-            throw new IllegalArgumentException(
-                    "Insufficient stock for product id: "
-                            + cartItem.getProductId()
-            );
-        }
+                    if (product.getStock() == null
+                            || product.getStock() < cartItem.getQuantity()) {
+                        throw new IllegalArgumentException(
+                                "Insufficient stock for product id: "
+                                        + cartItem.getProductId()
+                        );
+                    }
 
-        CartItem savedCartItem = cartItemRepository.save(cartItem);
+                    CartItem savedCartItem =
+                            cartItemRepository.save(cartItem);
 
-        CartItemAddedEvent event = new CartItemAddedEvent(
-                savedCartItem.getCartId(),
-                savedCartItem.getProductId(),
-                savedCartItem.getQuantity()
-        );
+                    CartItemAddedEvent event =
+                            new CartItemAddedEvent(
+                                    savedCartItem.getCartId(),
+                                    savedCartItem.getProductId(),
+                                    savedCartItem.getQuantity()
+                            );
 
-        cartEventProducer.publishCartItemAddedEvent(event);
+                    cartEventProducer.publishCartItemAddedEvent(event);
 
-        return savedCartItem;
+                    return savedCartItem;
+                });
     }
 
     public List<CartItem> getAllCartItems() {
@@ -108,18 +113,25 @@ public class CartService {
 
     private void validateCartItem(CartItem cartItem) {
         if (cartItem == null) {
-            throw new IllegalArgumentException("Cart item cannot be null");
+            throw new IllegalArgumentException(
+                    "Cart item cannot be null"
+            );
         }
 
         if (cartItem.getCartId() == null) {
-            throw new IllegalArgumentException("Cart ID cannot be null");
+            throw new IllegalArgumentException(
+                    "Cart ID cannot be null"
+            );
         }
 
         if (cartItem.getProductId() == null) {
-            throw new IllegalArgumentException("Product ID cannot be null");
+            throw new IllegalArgumentException(
+                    "Product ID cannot be null"
+            );
         }
 
-        if (cartItem.getQuantity() == null || cartItem.getQuantity() <= 0) {
+        if (cartItem.getQuantity() == null
+                || cartItem.getQuantity() <= 0) {
             throw new IllegalArgumentException(
                     "Quantity must be greater than zero"
             );
