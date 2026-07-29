@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ProductListPage from "./pages/ProductListPage";
 import AddProductPage from "./pages/AddProductPage";
+import CartPage from "./pages/CartPage";
 import "./App.css";
 
 function App() {
@@ -16,14 +17,16 @@ function App() {
         <button onClick={() => setCurrentPage("add-product")}>
           Add Product
         </button>
+
+        <button onClick={() => setCurrentPage("cart")}>
+          Cart
+        </button>
       </nav>
 
       <main>
-        {currentPage === "products" ? (
-          <ProductListPage />
-        ) : (
-          <AddProductPage />
-        )}
+        {currentPage === "products" && <ProductListPage />}
+        {currentPage === "add-product" && <AddProductPage />}
+        {currentPage === "cart" && <CartPage />}
       </main>
     </div>
   );

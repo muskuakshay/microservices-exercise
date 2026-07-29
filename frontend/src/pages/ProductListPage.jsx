@@ -1,24 +1,53 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loadProducts } from "../features/productSlice";
+import { createCartItem } from "../features/cartSlice";
 
 function ProductListPage() {
   const dispatch = useDispatch();
 
   const products = useSelector((state) => state.products.items);
-  const loading = useSelector((state) => state.products.loading);
-  const error = useSelector((state) => state.products.error);
+  const productLoading = useSelector(
+    (state) => state.products.loading
+  );
+  const productError = useSelector(
+    (state) => state.products.error
+  );
+
+  const cartLoading = useSelector(
+    (state) => state.cart.loading
+  );
+  const cartError = useSelector(
+    (state) => state.cart.error
+  );
 
   useEffect(() => {
     dispatch(loadProducts());
   }, [dispatch]);
 
+  const handleAddToCart = async (productId) => {
+    try {
+      await dispatch(
+        createCartItem({
+          cartId: 2,
+          productId,
+          quantity: 1,
+        })
+      ).unwrap();
+
+      alert("Product added to cart.");
+    } catch (error) {
+      console.error("Failed to add product to cart:", error);
+    }
+  };
+
   return (
     <div>
       <h1>Products</h1>
 
-      {loading && <p>Loading products...</p>}
-      {error && <p>{error}</p>}
+      {productLoading && <p>Loading products...</p>}
+      {productError && <p>{productError}</p>}
+      {cartError && <p>{cartError}</p>}
 
       <table>
         <thead>
@@ -27,6 +56,7 @@ function ProductListPage() {
             <th>Name</th>
             <th>Price</th>
             <th>Stock</th>
+            <th>Action</th>
           </tr>
         </thead>
 
@@ -37,6 +67,15 @@ function ProductListPage() {
               <td>{product.name}</td>
               <td>${Number(product.price).toFixed(2)}</td>
               <td>{product.stock}</td>
+              <td>
+                <button
+                  type="button"
+                  disabled={cartLoading}
+                  onClick={() => handleAddToCart(product.id)}
+                >
+                  Add to Cart
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
