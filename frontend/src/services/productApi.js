@@ -12,6 +12,24 @@ export const fetchProducts = async () => {
   return response.data;
 };
 
+export const fetchPagedProducts = async ({
+  page = 0,
+  size = 5,
+  sortField = "id",
+  sortDirection = "asc",
+}) => {
+  const response = await productApi.get("/paged", {
+    params: {
+      page,
+      size,
+      sortField,
+      sortDirection,
+    },
+  });
+
+  return response.data;
+};
+
 export const createProduct = async (product) => {
   const response = await productApi.post("", product);
   return response.data;
