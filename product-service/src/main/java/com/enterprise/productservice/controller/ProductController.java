@@ -5,6 +5,7 @@ import com.enterprise.productservice.service.ProductService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.math.BigDecimal;
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
@@ -41,16 +43,21 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+        return ResponseEntity.ok(
+                productService.getAllProducts()
+        );
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(
             @PathVariable Integer id
     ) {
-        return productService.getProductById(id)
+        return productService
+                .getProductById(id)
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseGet(() ->
+                        ResponseEntity.notFound().build()
+                );
     }
 
     @PutMapping("/{id}")
@@ -95,13 +102,17 @@ public class ProductController {
             @RequestParam BigDecimal minimumPrice
     ) {
         return ResponseEntity.ok(
-                productService.filterProductsByMinimumPrice(minimumPrice)
+                productService.filterProductsByMinimumPrice(
+                        minimumPrice
+                )
         );
     }
 
     @GetMapping("/names")
     public ResponseEntity<List<String>> getProductNames() {
-        return ResponseEntity.ok(productService.getProductNames());
+        return ResponseEntity.ok(
+                productService.getProductNames()
+        );
     }
 
     @GetMapping("/low-stock")
@@ -109,7 +120,9 @@ public class ProductController {
             @RequestParam Integer maximumStock
     ) {
         return ResponseEntity.ok(
-                productService.getLowStockProducts(maximumStock)
+                productService.getLowStockProducts(
+                        maximumStock
+                )
         );
     }
 }
