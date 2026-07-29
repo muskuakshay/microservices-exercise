@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addProduct } from "../features/productSlice";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 function AddProductPage() {
   const dispatch = useDispatch();
@@ -58,8 +59,17 @@ function AddProductPage() {
     <div>
       <h1>Add Product</h1>
 
-      {message && <p>{message}</p>}
-      {error && <p>{error}</p>}
+      {loading && (
+        <LoadingSpinner message="Creating product..." />
+      )}
+
+      {message && (
+        <p className="success-message">{message}</p>
+      )}
+
+      {error && (
+        <p className="error-message">{error}</p>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div>

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loadCartItems } from "../features/cartSlice";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 function CartPage() {
   const dispatch = useDispatch();
@@ -17,30 +18,37 @@ function CartPage() {
     <div>
       <h1>Cart Items</h1>
 
-      {loading && <p>Loading cart items...</p>}
-      {error && <p>{error}</p>}
+      {loading && (
+        <LoadingSpinner message="Loading cart items..." />
+      )}
 
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Cart ID</th>
-            <th>Product ID</th>
-            <th>Quantity</th>
-          </tr>
-        </thead>
+      {error && (
+        <p className="error-message">{error}</p>
+      )}
 
-        <tbody>
-          {items.map((item) => (
-            <tr key={item.id}>
-              <td>{item.id}</td>
-              <td>{item.cartId}</td>
-              <td>{item.productId}</td>
-              <td>{item.quantity}</td>
+      {!loading && (
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Cart ID</th>
+              <th>Product ID</th>
+              <th>Quantity</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {items.map((item) => (
+              <tr key={item.id}>
+                <td>{item.id}</td>
+                <td>{item.cartId}</td>
+                <td>{item.productId}</td>
+                <td>{item.quantity}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

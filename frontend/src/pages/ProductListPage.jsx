@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loadProducts } from "../features/productSlice";
 import { createCartItem } from "../features/cartSlice";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 function ProductListPage() {
   const dispatch = useDispatch();
@@ -45,41 +46,55 @@ function ProductListPage() {
     <div>
       <h1>Products</h1>
 
-      {productLoading && <p>Loading products...</p>}
-      {productError && <p>{productError}</p>}
-      {cartError && <p>{cartError}</p>}
+      {productLoading && (
+        <LoadingSpinner message="Loading products..." />
+      )}
 
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Stock</th>
-            <th>Action</th>
-          </tr>
-        </thead>
+      {productError && (
+        <p className="error-message">{productError}</p>
+      )}
 
-        <tbody>
-          {products.map((product) => (
-            <tr key={product.id}>
-              <td>{product.id}</td>
-              <td>{product.name}</td>
-              <td>${Number(product.price).toFixed(2)}</td>
-              <td>{product.stock}</td>
-              <td>
-                <button
-                  type="button"
-                  disabled={cartLoading}
-                  onClick={() => handleAddToCart(product.id)}
-                >
-                  Add to Cart
-                </button>
-              </td>
+      {cartError && (
+        <p className="error-message">{cartError}</p>
+      )}
+
+      {!productLoading && (
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {products.map((product) => (
+              <tr key={product.id}>
+                <td>{product.id}</td>
+                <td>{product.name}</td>
+                <td>${Number(product.price).toFixed(2)}</td>
+                <td>{product.stock}</td>
+                <td>
+                  <button
+                    type="button"
+                    disabled={cartLoading}
+                    onClick={() =>
+                      handleAddToCart(product.id)
+                    }
+                  >
+                    {cartLoading
+                      ? "Adding..."
+                      : "Add to Cart"}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
