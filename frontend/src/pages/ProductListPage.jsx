@@ -1,94 +1,26 @@
-import { useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { loadProducts } from "../features/productSlice";
-import { createCartItem } from "../features/cartSlice";
 import LoadingSpinner from "../components/LoadingSpinner";
+import useProducts from "../hooks/useProducts";
 
 function ProductListPage() {
-  const dispatch = useDispatch();
-
-  const products = useSelector((state) => state.products.items);
-  const productLoading = useSelector(
-    (state) => state.products.loading
-  );
-  const productError = useSelector(
-    (state) => state.products.error
-  );
-  const currentPage = useSelector(
-    (state) => state.products.currentPage
-  );
-  const totalPages = useSelector(
-    (state) => state.products.totalPages
-  );
-  const pageSize = useSelector(
-    (state) => state.products.pageSize
-  );
-
-  const cartLoading = useSelector(
-    (state) => state.cart.loading
-  );
-  const cartError = useSelector(
-    (state) => state.cart.error
-  );
-
-  const [searchText, setSearchText] = useState("");
-  const [maximumPrice, setMaximumPrice] = useState("");
-
-  useEffect(() => {
-    dispatch(
-      loadProducts({
-        page: 0,
-        size: pageSize,
-        sortField: "id",
-        sortDirection: "asc",
-      })
-    );
-  }, [dispatch, pageSize]);
-
-  const filteredProducts = useMemo(() => {
-    const normalizedSearch = searchText
-      .trim()
-      .toLowerCase();
-
-    const maximumPriceNumber =
-      maximumPrice === ""
-        ? null
-        : Number(maximumPrice);
-
-    return products.filter((product) => {
-      const matchesName = product.name
-        .toLowerCase()
-        .includes(normalizedSearch);
-
-      const matchesPrice =
-        maximumPriceNumber === null ||
-        Number(product.price) <= maximumPriceNumber;
-
-      return matchesName && matchesPrice;
-    });
-  }, [products, searchText, maximumPrice]);
-
-  const handlePageChange = (page) => {
-    dispatch(
-      loadProducts({
-        page,
-        size: pageSize,
-        sortField: "id",
-        sortDirection: "asc",
-      })
-    );
-  };
+  const {
+    filteredProducts,
+    productLoading,
+    productError,
+    cartLoading,
+    cartError,
+    currentPage,
+    totalPages,
+    searchText,
+    maximumPrice,
+    setSearchText,
+    setMaximumPrice,
+    fetchPage,
+    addToCart,
+  } = useProducts();
 
   const handleAddToCart = async (productId) => {
     try {
-      await dispatch(
-        createCartItem({
-          cartId: 2,
-          productId,
-          quantity: 1,
-        })
-      ).unwrap();
-
+      await addToCart(productId);
       alert("Product added to cart.");
     } catch (error) {
       console.error("Failed to add product to cart:", error);
@@ -195,9 +127,7 @@ function ProductListPage() {
             <button
               type="button"
               disabled={currentPage === 0}
-              onClick={() =>
-                handlePageChange(currentPage - 1)
-              }
+              onClick={() => fetchPage(currentPage - 1)}
             >
               Previous
             </button>
@@ -210,7 +140,7 @@ function ProductListPage() {
                 key={page}
                 type="button"
                 disabled={page === currentPage}
-                onClick={() => handlePageChange(page)}
+                onClick={() => fetchPage(page)}
               >
                 {page + 1}
               </button>
@@ -222,9 +152,7 @@ function ProductListPage() {
                 totalPages === 0 ||
                 currentPage === totalPages - 1
               }
-              onClick={() =>
-                handlePageChange(currentPage + 1)
-              }
+              onClick={() => fetchPage(currentPage + 1)}
             >
               Next
             </button>

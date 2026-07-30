@@ -1,22 +1,25 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { loadCartItems } from "../features/cartSlice";
 import LoadingSpinner from "../components/LoadingSpinner";
+import useCart from "../hooks/useCart";
 
 function CartPage() {
-  const dispatch = useDispatch();
-
-  const items = useSelector((state) => state.cart.items);
-  const loading = useSelector((state) => state.cart.loading);
-  const error = useSelector((state) => state.cart.error);
-
-  useEffect(() => {
-    dispatch(loadCartItems());
-  }, [dispatch]);
+  const {
+    items,
+    loading,
+    error,
+    refreshCart,
+  } = useCart();
 
   return (
     <div>
-      <h1>Cart Items</h1>
+      <h1>Cart</h1>
+
+      <button
+        type="button"
+        onClick={refreshCart}
+        disabled={loading}
+      >
+        {loading ? "Refreshing..." : "Refresh Cart"}
+      </button>
 
       {loading && (
         <LoadingSpinner message="Loading cart items..." />
@@ -26,7 +29,11 @@ function CartPage() {
         <p className="error-message">{error}</p>
       )}
 
-      {!loading && (
+      {!loading && items.length === 0 && (
+        <p>Your cart is empty.</p>
+      )}
+
+      {!loading && items.length > 0 && (
         <table>
           <thead>
             <tr>
