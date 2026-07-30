@@ -1,32 +1,26 @@
-import { useState } from "react";
-import ProductListPage from "./pages/ProductListPage";
-import AddProductPage from "./pages/AddProductPage";
-import CartPage from "./pages/CartPage";
+import { NavLink } from "react-router-dom";
+import AppRoutes from "./routes/AppRoutes";
 import "./App.css";
 
 function App() {
-  const [currentPage, setCurrentPage] = useState("products");
-
   return (
     <div className="app">
       <nav>
-        <button onClick={() => setCurrentPage("products")}>
+        <NavLink to="/products">
           Products
-        </button>
+        </NavLink>
 
-        <button onClick={() => setCurrentPage("add-product")}>
+        <NavLink to="/add-product">
           Add Product
-        </button>
+        </NavLink>
 
-        <button onClick={() => setCurrentPage("cart")}>
+        <NavLink to="/cart">
           Cart
-        </button>
+        </NavLink>
       </nav>
 
       <main>
-        {currentPage === "products" && <ProductListPage />}
-        {currentPage === "add-product" && <AddProductPage />}
-        {currentPage === "cart" && <CartPage />}
+        <AppRoutes />
       </main>
     </div>
   );
